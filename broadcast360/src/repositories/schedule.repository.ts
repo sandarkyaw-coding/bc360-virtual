@@ -1,99 +1,196 @@
 import { prisma } from "@/lib/prisma";
+import type { CreateScheduleInput } from "@/types/schedule";
 
+export class ScheduleRepository {
 
-export const scheduleRepository = {
 
 
 async findAll(){
 
+
  return prisma.schedule.findMany({
 
+
   include:{
-    channel:true,
-    program:{
-      include:{
-        items:true
-      }
-    }
+
+
+   channel:true,
+
+
+   playlist:true
+
+
   },
 
+
   orderBy:{
-    startTime:"asc"
+
+
+   startTime:"asc"
+
+
   }
+
 
  });
 
-},
+
+}
+
+
+
 
 
 
 async findById(id:number){
 
+
  return prisma.schedule.findUnique({
 
-  where:{
-    id
-  },
+
+  where:{id},
+
 
   include:{
-    channel:true,
 
-    program:{
-      include:{
-        items:true
-      }
-    }
+
+   channel:true,
+
+
+   playlist:true
+
 
   }
 
+
  });
 
-},
+
+}
 
 
 
-async create(data:any){
+
+
+
+async create(data: CreateScheduleInput){
 
  return prisma.schedule.create({
 
-  data
+
+  data:{
+
+
+   channelId:data.channelId,
+
+
+   playlistId:data.playlistId,
+
+
+   startTime:new Date(data.startTime),
+
+
+   endTime:data.endTime
+   ? new Date(data.endTime)
+   : null
+
+
+  },
+
+
+  include:{
+
+
+   channel:true,
+
+
+   playlist:true
+
+
+  }
+
 
  });
 
-},
+
+}
+
+
+
+
+
 
 
 
 async update(
  id:number,
- data:any
+ data:CreateScheduleInput
 ){
+
 
  return prisma.schedule.update({
 
-  where:{
-    id
+
+  where:{id},
+
+
+  data:{
+
+
+   channelId:data.channelId,
+
+
+   playlistId:data.playlistId,
+
+
+   startTime:new Date(data.startTime),
+
+
+   endTime:data.endTime
+   ? new Date(data.endTime)
+   : null
+
+
   },
 
-  data
+
+  include:{
+
+
+   channel:true,
+
+
+   playlist:true
+
+
+  }
+
 
  });
 
-},
+
+}
+
+
+
+
 
 
 
 async delete(id:number){
 
+
  return prisma.schedule.delete({
 
-  where:{
-    id
-  }
+
+  where:{id}
+
 
  });
 
+
 }
+
 
 
 }

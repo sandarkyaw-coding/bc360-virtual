@@ -1,28 +1,28 @@
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export class PlaylistRepository {
 
 
-  async create(data:{
-    name:string;
-    programId:number;
-  }){
+  async create(data: {
+    name: string;
+    programId: number;
+  }) {
 
 
     return prisma.playlist.create({
 
-      data:{
+      data: {
 
-        name:data.name,
+        name: data.name,
 
-        programId:data.programId
+        programId: data.programId
 
       },
 
 
-      include:{
+      include: {
 
-        program:true
+        program: true
 
       }
 
@@ -30,24 +30,31 @@ export class PlaylistRepository {
 
   }
 
-
-
-
-  async findByProgram(programId:number){
+  async findAll() {
 
 
     return prisma.playlist.findMany({
 
-      where:{
-        programId
+      include: {
+
+
+        program: true,
+
+
+        items: true
+
+
       },
 
 
-      include:{
+      orderBy: {
 
-        items:true
+
+        createdAt: "desc"
+
 
       }
+
 
     });
 
@@ -55,23 +62,71 @@ export class PlaylistRepository {
   }
 
 
-
-
-  async findById(id:number){
+  async findById(
+    id: number
+  ) {
 
 
     return prisma.playlist.findUnique({
 
-      where:{
+
+      where: {
         id
       },
 
 
-      include:{
+      include: {
 
-        items:true,
 
-        program:true
+        program: true,
+
+
+        items: {
+
+
+          include: {
+
+
+            movie: true,
+
+            episode: true,
+
+            advertisement: true,
+
+            news: true,
+
+            stream: true
+
+
+          }
+
+
+        }
+
+
+      }
+
+
+    });
+
+
+
+  }
+
+
+  async findByProgram(programId: number) {
+
+
+    return prisma.playlist.findMany({
+
+      where: {
+        programId
+      },
+
+
+      include: {
+
+        items: true
 
       }
 
@@ -82,12 +137,13 @@ export class PlaylistRepository {
 
 
 
-  async delete(id:number){
+
+  async delete(id: number) {
 
 
     return prisma.playlist.delete({
 
-      where:{
+      where: {
         id
       }
 

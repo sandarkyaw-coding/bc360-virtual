@@ -21,10 +21,14 @@ type PlaylistItem = {
   } | null;
 
 
-  advertisement?:{
+  episode?:{
     title:string;
   } | null;
 
+
+  advertisement?:{
+    title:string;
+  } | null;
 
 };
 
@@ -50,310 +54,289 @@ type Playlist = {
 
 
 
-
-export default function PlaylistDetailsPage(){
-
-
-  const params = useParams();
-
-
-  const playlistId =
-    Number(params.playlistId);
-
-
-
-  const [playlist,setPlaylist] =
-    useState<Playlist | null>(null);
-
-
-
-  useEffect(()=>{
-
-
-    async function loadPlaylist(){
-
-
-      try{
-
-
-        const res =
-          await fetch(
-            `/api/playlists/${playlistId}`
-          );
-
-
-        const data =
-          await res.json();
-
-
-        setPlaylist(data);
-
-
-
-      }catch(error){
-
-        console.error(error);
-
-      }
-
-
-    }
-
-
-
-    loadPlaylist();
-
-
-
-  },[playlistId]);
-
-
-
-
-
-
-  if(!playlist){
-
-
-    return (
-
-      <div className="p-6">
-
-        Loading...
-
-      </div>
-
-    );
-
-  }
-
-
-
-
-
-
+function getTitle(item:PlaylistItem){
 
   return (
-
-    <div className="max-w-5xl mx-auto p-6">
-
-
-      <div className="flex justify-between mb-6">
-
-
-        <div>
-
-
-          <h1 className="text-3xl font-bold">
-
-            {playlist.name}
-
-          </h1>
-
-
-
-          <p className="text-gray-600">
-
-            Program:
-
-            {" "}
-
-            {playlist.program.title}
-
-          </p>
-
-
-        </div>
-
-
-
-
-
-        <Link
-
-
-          href={`/admin/playlists/${playlistId}/items/create`}
-
-
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-
-        >
-
-          Add Item
-
-        </Link>
-
-
-
-      </div>
-
-
-
-
-
-
-      <div className="border rounded p-4 mb-6">
-
-
-        <h2 className="font-bold">
-
-          Playlist Info
-
-        </h2>
-
-
-
-        <p>
-
-          Total Duration:
-
-          {" "}
-
-          {playlist.totalDuration ?? 0}
-
-          {" "}seconds
-
-        </p>
-
-
-
-        <p>
-
-          Items:
-
-          {" "}
-
-          {playlist.items.length}
-
-        </p>
-
-
-
-      </div>
-
-
-
-
-
-
-
-      <h2 className="text-xl font-bold mb-4">
-
-        Broadcast Sequence
-
-      </h2>
-
-
-
-
-
-      {
-        playlist.items.length === 0 ? (
-
-
-          <p className="text-gray-500">
-
-            No playlist items yet.
-
-          </p>
-
-
-        ):(
-
-
-          <div className="space-y-3">
-
-
-          {
-            playlist.items
-            .sort(
-              (a,b)=>
-                a.order-b.order
-            )
-            .map(item=>(
-
-
-              <div
-
-              key={item.id}
-
-              className="border p-4 rounded flex justify-between"
-
-              >
-
-
-                <div>
-
-
-                  <p className="font-semibold">
-
-
-                    {item.order}.
-
-
-                    {" "}
-
-
-                    {item.type}
-
-
-                  </p>
-
-
-
-                  <p>
-
-
-                    {
-                      item.movie?.title ||
-
-                      item.advertisement?.title ||
-
-                      "Media"
-
-                    }
-
-
-                  </p>
-
-
-                </div>
-
-
-
-
-
-                <div>
-
-
-                  {item.duration ?? 0}
-
-                  {" "}sec
-
-
-                </div>
-
-
-
-              </div>
-
-
-            ))
-          }
-
-
-          </div>
-
-
-        )
-
-      }
-
-
-
-
-    </div>
-
+    item.movie?.title ||
+    item.episode?.title ||
+    item.advertisement?.title ||
+    "Unknown"
   );
+
+}
+
+
+
+function formatDuration(seconds:number){
+
+ const m =
+ Math.floor(seconds / 60);
+
+
+ const s =
+ seconds % 60;
+
+
+ return `${m}m ${s}s`;
+
+}
+
+
+
+
+
+export default function PlaylistViewPage(){
+
+
+ const params = useParams();
+
+
+ const playlistId =
+ Number(params.id);
+
+
+
+ const [playlist,setPlaylist] =
+ useState<Playlist | null>(null);
+
+async function handleDelete(id:number){
+
+
+ const confirmDelete =
+ window.confirm(
+  "Delete this playlist item?"
+ );
+
+
+ if(!confirmDelete) return;
+
+
+
+ await fetch(
+  `/api/playlist-items/${id}`,
+  {
+    method:"DELETE"
+  }
+ );
+
+
+
+ setPlaylist(prev => {
+
+  if(!prev) return prev;
+
+
+  return {
+
+   ...prev,
+
+   items:
+   prev.items.filter(
+    item=>item.id !== id
+   )
+
+  };
+
+ });
+
+
+}
+
+ useEffect(()=>{
+
+
+ async function load(){
+
+
+ const res =
+ await fetch(
+ `/api/playlists/${playlistId}`
+ );
+
+
+ const data =
+ await res.json();
+
+
+ setPlaylist(data);
+
+
+ }
+
+
+ load();
+
+
+ },[playlistId]);
+
+
+
+
+ if(!playlist){
+
+ return <div className="p-6">
+ Loading...
+ </div>
+
+ }
+
+
+
+ return (
+
+ <div className="max-w-5xl mx-auto p-6">
+
+
+ <div className="flex justify-between mb-6">
+
+
+ <div>
+
+ <h1 className="text-3xl font-bold">
+
+ {playlist.name}
+
+ </h1>
+
+
+ <p>
+
+ Program:
+ {" "}
+ {playlist.program.title}
+
+ </p>
+
+
+ </div>
+
+
+
+ <Link
+
+ href={`/admin/playlists/${playlistId}/items/create`}
+
+ className="bg-blue-600 text-white px-4 py-2 rounded"
+
+ >
+
+ Add Item
+
+ </Link>
+
+
+ </div>
+
+
+
+
+
+ <h2 className="text-xl font-bold mb-4">
+
+ Broadcast Sequence
+
+ </h2>
+
+
+
+
+ {
+
+ playlist.items.map(item=>(
+
+
+<div
+
+key={item.id}
+
+className="border rounded p-4 flex justify-between"
+
+>
+
+
+<div>
+
+<p className="font-bold">
+
+{item.order}. {getTitle(item)}
+
+</p>
+
+
+<p className="text-gray-500">
+
+{item.type}
+
+</p>
+
+
+</div>
+
+
+
+
+<div className="flex flex-col items-end gap-2">
+
+
+<p>
+
+{formatDuration(item.duration ?? 0)}
+
+</p>
+
+
+
+<div className="flex gap-3">
+
+
+<Link
+
+href={`/admin/playlists/${playlistId}/items/${item.id}/edit`}
+
+className="text-blue-600"
+
+>
+
+Edit
+
+</Link>
+
+
+
+
+
+<button
+
+onClick={()=>handleDelete(item.id)}
+
+className="text-red-600"
+
+>
+
+Delete
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+ ))
+
+ }
+
+
+ </div>
+
+
+ )
+
 
 }

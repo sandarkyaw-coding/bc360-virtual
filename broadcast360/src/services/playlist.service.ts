@@ -3,9 +3,24 @@ import { PlaylistRepository } from "@/repositories/playlist.repository";
 
 export class PlaylistService{
 
-
  private repository =
     new PlaylistRepository();
+
+    
+    
+ async getAllPlaylists(){
+   return this.repository.findAll();
+
+ }
+
+ async getPlaylistById(
+ id:number
+){
+
+ return this.repository.findById(id);
+
+}
+
 
  async createPlaylist(data:{
     name:string;
@@ -22,6 +37,7 @@ export class PlaylistService{
     return this.repository.create(data);
  }
 
+
  async getPlaylists(programId:number){
     return this.repository.findByProgram(
       programId
@@ -29,7 +45,6 @@ export class PlaylistService{
 
 
  }
-
 
 
  async getPlaylist(id:number){
